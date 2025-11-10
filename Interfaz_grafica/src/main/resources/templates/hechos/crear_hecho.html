@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!-- <html th:replace="layout/base" lang="en">  esta forma es menos robusta-->
+<html th:replace="~{layout/base :: html}">
+
+<div th:fragment = "contenido">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-10">
+                <div class="card shadow p-4">
+                    <h1 class="mb-4 text-center">Registrar un Nuevo Hecho</h1>
+
+                    <!-- Alert de feedback -->
+                    <div id="alertBox"></div>
+
+                    <form th:action="@{/hechos/crear_hecho}" th:object="${hecho}" id="hechoForm" class="form-group" novalidate  method="post">
+
+                        <!-- Titulo -->
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" required>
+                        </div>
+
+                        <!-- Descripcion -->
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+                        </div>
+
+                        <!-- Fecha -->
+                        <div class="mb-3">
+                            <label for="fecha" class="form-label">Fecha del acontecimiento</label>
+                            <input type="date" class="form-control" id="fecha" name="fecha" required>
+                        </div>
+
+                        <!-- Etiquetas -->
+                        <div class="mb-3">
+                            <label for="etiquetas" class="form-label">Etiquetas</label>
+                            <input id="etiquetas" class="form-control" name="etiquetas" placeholder="Añadir etiquetas...">
+                            <small class="form-text text-muted">Presione Enter o coma para separar etiquetas</small>
+                        </div>
+
+                        <!-- Categoría -->
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label">Categoría</label>
+                            <select class="form-select" id="categoria" name="categoria" required>
+                                <option value="" disabled selected>Selecciona una categoría</option>
+                                <option value="accidente">Accidente</option>
+                                <option value="incendio">Incendio</option>
+                                <option value="manifestacion">Manifestación</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+
+                        <!-- Ubicación -->
+                        <div class="mb-3">
+                            <label for="ubicacion" class="form-label">Ubicación</label>
+                            <input type="text" class="form-control" id="ubicacion" name="ubicacion" placeholder="Escribe o selecciona en el mapa">
+                        </div>
+
+                        <!-- Archivos multimedia -->
+                        <div class="mb-3">
+                            <label for="files" class="form-label">Archivos multimedia</label>
+                            <input type="file" class="form-control" id="files" name="files" multiple accept="image/*,video/*">
+
+                            <!-- Botón que abre el selector -->
+                            <button type="button" id="addFileBtn" class="btn btn-outline-primary mb-2">
+                                ➕ Agregar archivos
+                            </button>
+
+                            <small class="form-text text-muted">Puede seleccionar múltiples archivos (fotos o videos)</small>
+                            <div class="multimedia-preview d-flex flex-wrap" id="multimedia-preview"></div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tagify/4.17.7/tagify.min.js"></script>
+
+    <script>
+        // Inicializar Tagify
+        const tagInput = document.getElementById('etiquetas');
+        new Tagify(tagInput);
+
+        // Preview de imágenes y videos
+        document.getElementById('archivos').addEventListener('change', function () {
+            const preview = document.getElementById('multimedia-preview');
+            preview.innerHTML = '';
+            Array.from(this.files).forEach(file => {
+                const url = URL.createObjectURL(file);
+                let element;
+                if (file.type.startsWith('image/')) {
+                    element = document.createElement('img');
+                    element.src = url;
+                } else if (file.type.startsWith('video/')) {
+                    element = document.createElement('video');
+                    element.src = url;
+                    element.controls = true;
+                }
+                preview.appendChild(element);
+            });
+        });
+
+        // Envío del formulario
+        document.getElementById("hechoForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const hecho = {
+                titulo: document.getElementById("titulo").value,
+                descripcion: document.getElementById("descripcion").value,
+                fechaAcontecimiento: document.getElementById("fecha").value,
+                etiquetas: tagInput.value ? JSON.parse(tagInput.value).map(e => e.value) : [],
+                categoria: document.getElementById("categoria").value,
+                ubicacion: document.getElementById("ubicacion").value
+            };
+
+            const formData = new FormData();
+            formData.append("hecho", new Blob([JSON.stringify(hecho)], { type: "application/json" }));
+
+            const archivos = document.getElementById("archivos").files;
+            for (let i = 0; i < archivos.length; i++) {
+                formData.append("archivos", archivos[i]);
+            }
+
+            try {
+                const response = await fetch("http://localhost:8080/hechos", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const alertBox = document.getElementById("alertBox");
+                alertBox.innerHTML = "";
+
+                if (response.ok) {
+                    alertBox.innerHTML = `<div class="alert alert-success">Hecho creado con éxito 🎉</div>`;
+                    document.getElementById("hechoForm").reset();
+                    document.getElementById("multimedia-preview").innerHTML = "";
+                } else {
+                    alertBox.innerHTML = `<div class="alert alert-danger">Error al crear el hecho 😥</div>`;
+                }
+            } catch (error) {
+                console.error("Error en la request:", error);
+                document.getElementById("alertBox").innerHTML = `<div class="alert alert-danger">Error de conexión</div>`;
+            }
+        });
+    </script>
+
+
+</div>

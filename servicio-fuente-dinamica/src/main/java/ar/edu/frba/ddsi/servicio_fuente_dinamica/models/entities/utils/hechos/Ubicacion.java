@@ -1,0 +1,31 @@
+package ar.edu.frba.ddsi.servicio_fuente_dinamica.models.entities.utils.hechos;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
+
+@NoArgsConstructor
+@Setter
+@Getter
+@Embeddable
+public class Ubicacion {
+  @Column(name = "latitud", nullable = false)
+  public Double latitud;
+  @Column(name = "longitud", nullable = false)
+  public Double longitud;
+
+  public Ubicacion(Double latitud, Double longitud) {
+    this.latitud= latitud;
+    this.longitud=longitud;
+  }
+
+}

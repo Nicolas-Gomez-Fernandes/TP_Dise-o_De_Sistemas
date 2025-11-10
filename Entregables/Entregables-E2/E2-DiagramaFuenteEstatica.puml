@@ -1,0 +1,57 @@
+@startuml
+
+class HechoMapper {
++ hechoToHechoOutputDTO(Hecho hecho): HechoOutputDTO
+}
+
+class Hecho {
+- titulo: String
+- descripcion: String
+- categoria: Categoria
+- lugarAcontecimiento: Ubicacion
+- fechaAcontecimiento: LocalDate
+- etiquetas: List<String>
+}
+
+class Ubicacion {
+- latitud: Double
+- longitud: Double
+}
+
+class Categoria {
+- nombre: String
+}
+
+
+Ubicacion --* Hecho
+Categoria --* Hecho
+HechoMapper ..|> Hecho
+
+
+class importadorDeHechos {
+- PDF: String
+- CSV: String
+- tipoImportador: TipoImportador
+
++ importar(String path): List<Hecho>
++ obtenerExtension(String path): String
+}
+
+interface TipoImportador {
++ importarHechos(String path): List<Hecho>
+}
+
+class importadorCsv implements TipoImportador {
+- mapper: MapperHecho
+
++ importarHechos(String path): List<Hecho>
+}
+
+class MapperHecho {
++ cargarLinea(String[] datos): Hecho
+}
+
+importadorDeHechos --> TipoImportador
+importadorCsv --> MapperHecho
+
+@enduml

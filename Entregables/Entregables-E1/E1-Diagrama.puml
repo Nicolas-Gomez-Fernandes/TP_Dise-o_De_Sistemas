@@ -1,0 +1,191 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+/'class Filtro {
+    - titulo: String
+    - descripcion:String
+    - categoria: Categoria
+    - lugarAcontecimiento: Ubicacion
+    - fechaAcontecimiento: LocalDate
+}'/
+
+interface Filtro {
+    + aplciarFiltro(Lista<Hechos> hechos): boolean
+}
+
+class FiltroTitulo extends Filtro {
+    - palabraClave: String
+
+    + aplicarFiltro(List<Hecho> hechos): boolean
+}
+
+class FiltroDescripcion extends Filtro {
+    - palabraClave: String
+
+    + aplicarFiltro(List<Hecho> hechos): boolean
+}
+
+class FiltroCategoria extends Filtro {
+    - palabraClave: String
+
+    + aplicarFiltro(List<Hecho> hechos): boolean
+}
+
+class FiltroLugar extends Filtro {
+    - latitud: Double
+    - longitud:Double
+
+    + aplicarFiltro(List<Hecho> hechos): boolean
+}
+
+class FiltroFecha extends Filtro {
+    - desde: LocalDate
+    - hasta: LocalDate
+
+    + aplicarFiltro(List<Hecho> hechos): boolean
+}
+
+class Usuario {
+}
+
+class Contribuyente extends Usuario {
+    - nombre: String
+    - apellido: String
+    - edad: Int
+
+    + crearSolicitudEliminacion(Hecho hecho, String fundamento): void
+}
+
+class Visualizador extends Usuario {
+
+}
+
+class Hecho {
+    - titulo: String
+    - descripcion: String
+    - categoria: String
+    - lugarAcontecimiento: Ubicacion
+    - fechaAcontecimiento: Date
+    - fechaCarga: LocalDate
+    - origen: Enum
+    - contenido: Contenido
+    - contribuidor: Usuario
+    - etiquetas: List<String>
+}
+
+class SolicitudDeEliminacion {
+    - hecho: Hecho
+    - fundamento: String
+    - historialEstados: List<Estado>
+    - fechaCracion: LocalDateTime
+
+    + estadoActual(): Estado
+    + cambiarEstado(): void
+    + pasoUnDia(): boolean
+    + pasaronDosHoras(): boolean
+}
+
+enum Estado {
+    ACEPTADA
+    PENDIENTE
+    RECHAZADA
+}
+
+interface Contenido {
+    - tipo: String?
+}
+
+enum Origen {
+    DATASET,
+    CARGA_MANUAL,
+    CONTRIBUYENTE
+}
+
+class Texto extends Contenido {
+}
+
+class Multimedia extends Contenido {
+}
+
+class Ubicacion {
+    - latitud: Double
+    - longitud: Double
+}
+
+class Coleccion {
+    - titulo: String
+    - descripcion: String
+    - hechos: List<Hecho>
+    - criterios: List<CriterioPertenencia>
+    - fuente: FuenteDatos
+
+    + setCriterioDePertenencia(): void
+    + asociarFuente(FuenteDatos fuente): void
+    + asociarFuente(FuenteDatos fuente, CriterioPertenencia criterio): void
+    + agregarCriterioDePertenencia(CriterioPertenencia criterio): void
+}
+
+Coleccion --> FuenteDatos
+Coleccion -->"*" Hecho
+Coleccion -->"*" CriterioPertenencia
+
+interface FuenteDatos {
+    + cargarDatos(): void
+}
+
+class EstaticaCSV extends FuenteDatos {
+    - url: String
+
+    + cargarDatos(): void
+}
+
+class ImportadorCSV {
+
+    +importarHechosDesdeCSV(String rutaArchivo): List<Hecho>
+}
+
+interface CriterioPertenencia {
+    + aplicarCriterio(): List<Hecho>
+}
+
+class CriterioTitulo extends CriterioPertenencia{
+    - palabraClave: String
+
+    + aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+
+class CriterioFecha extends CriterioPertenencia{
+    - desde: LocalDate
+    - hasta: LocalDate
+
+    + aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+class CriterioUbicacion extends CriterioPertenencia{
+    - latitud: Double
+    - longitud: Double
+
+    + aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+
+class CriterioCategoria  extends CriterioPertenencia{
+    - categoria: String
+
+    + aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+
+class CriterioDescripcion extends CriterioPertenencia{
+    - palabraClave: String
+
+    + aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+
+Usuario -.-> Filtro
+Hecho --> Usuario
+SolicitudDeEliminacion --> Hecho
+Contenido --* Hecho
+Ubicacion --* Hecho
+EstaticaCSV -.-> ImportadorCSV
+SolicitudDeEliminacion --> Estado
+Origen --* Hecho
+
+@enduml

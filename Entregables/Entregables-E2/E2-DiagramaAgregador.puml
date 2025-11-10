@@ -1,0 +1,157 @@
+@startuml
+
+class Hecho {
+- id: String
+- titulo: String
+- descripcion: string
+- categoria: Categoria
+- ubicacion: Ubicacion
+- fechaCreacion: LocalDate
+- fechaUltimaEdicion: LocalDate
+- rutaArchivoMultimedia: String
+- imagen: Image
+- etiquetas: List<String>
+- eliminado: Boolean
+}
+
+class Coleccion {
+- id: String
+- titulo: String
+- descripcion: String
+- hechos: List<Hecho>
+- criterios: List<CriterioPertenencia>
+- fuentes: List<Fuente>
+
++ agregarCriterioDePertenencia(criterio: CriterioPertenencia): void
++ agregarCriteriosDePertenencia(criterio: CriterioPertenencia): void
++ aplicarCriteriosDePertenencia(): void
++ eliminarCriterio(CriterioPertenencia criterio): void
++ asociarFuente(Fuente fuente): void
++ asociarFuentes(List<Fuente> fuentes): void
++ getHechoIndex(Integer index): Hecho
++ agregarHecho(Hecho hecho): void
++ eliminarHecho(Hecho hecho): void
++ agregarHechos(List<Hecho>): void
+}
+
+class SolicitudDeEliminacion {
+- hechoAEliminar: Hecho
+- fundamento: String
+- historialEstados: List<EstadoYHora>
+- detectorDeSpam: DetectorDeSpam
+
++ estadoActual(): Estado
++ cambiarEstado(estado: Estado): Estado
+}
+
+interface DetectorDeSpam {
++ esSpam(texto: String): Boolean
+}
+
+class EstadoYHora {
+- estado: Estado
+- fecha: LocalDate
+}
+
+enum Estado {
+ELIMINADO
+PENNDIENTE
+RECHAZADO
+}
+
+interface CriterioPertenencia {
++ aplicarCriterio(): List<Hecho>
+}
+
+class CriterioTitulo implements CriterioPertenencia{
+- palabraClave: String
+
++ aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+
+class CriterioFecha implements CriterioPertenencia{
+- desde: LocalDate
+- hasta: LocalDate
+
++ aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+class CriterioUbicacion implements CriterioPertenencia{
+- latitud: Double
+- longitud: Double
+
++ aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+
+class CriterioCategoria  implements CriterioPertenencia{
+- categoria: String
+
++ aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+
+class CriterioDescripcion implements CriterioPertenencia{
+- palabraClave: String
+
++ aplicarCriterio(List<Hecho> hechos): List<Hecho>
+}
+
+class Ubicacion {
+- latitud: Double
+- longitud: Double
+}
+
+class Categoria {
+- nombre: String
+}
+
+enum Fuente {
+ESTATICA
+DINAMICA
+PROXY
+}
+
+interface IAPIClient {
++ getHechos(): List<HechoOutputDTO>
++ isFuente:(Fuente fuente): Bool
+}
+
+class FuenteDinamicaClient implements IAPIClient {
+- webClient: WebClient
+- fuente: Fuente
+
++ getHechos(): List<HechoOutputDTO>
++ isFuente(Fuente fuente): Boolean
+}
+
+class FuenteEstaticaClient implements IAPIClient {
+- webClient: WebClient
+- fuente: Fuente
+
++ getHechos(): List<HechoOutputDTO>
++ isFuente(Fuente fuente): Boolean
+}
+
+class FuenteProxyClient implements IAPIClient {
+- webClient: WebClient
+- fuente: Fuente
+
++ getHechos(): List<HechoOutputDTO>
++ isFuente(Fuente fuente): Boolean
+}
+
+Coleccion -->"*" Hecho
+SolicitudDeEliminacion --> Hecho
+SolicitudDeEliminacion --> DetectorDeSpam
+SolicitudDeEliminacion -->"*" EstadoYHora
+EstadoYHora --> Estado
+Coleccion --> CriterioPertenencia
+CriterioCategoria --> Categoria
+CriterioUbicacion --> Ubicacion
+Hecho --> Categoria
+Hecho --> Ubicacion
+Coleccion -->"*" Fuente
+FuenteDinamicaClient --> Fuente
+FuenteEstaticaClient --> Fuente
+FuenteProxyClient --> Fuente
+
+@enduml
+
