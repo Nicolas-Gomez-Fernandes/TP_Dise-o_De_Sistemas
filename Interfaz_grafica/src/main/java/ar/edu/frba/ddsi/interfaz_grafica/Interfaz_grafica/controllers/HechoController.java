@@ -20,36 +20,6 @@ public class HechoController {
         this.hechosService = hechosService;
     }
 
-    @GetMapping("/nuevo")
-    public String mostrarFormularioCrear(Model model) {
-        model.addAttribute("hecho", new HechoDTO());
-        model.addAttribute("titulo", "Crear Nuevo Hecho");
-        return "hechos/crear_hecho"; // Nombre de la plantilla Thymeleaf para el formulario
-    }
-
-    @PostMapping("/crear")
-    public String crearHecho(@ModelAttribute("hecho") HechoDTO hechoDTO,
-                             BindingResult bindingResult,
-                             Model model,
-                             RedirectAttributes redirectAttributes) {
-        try {
-            HechoDTO hechoCreado = hechosService.crearHecho(hechoDTO);
-            redirectAttributes.addFlashAttribute("mensaje", "Hecho creado exitosamente");
-            redirectAttributes.addFlashAttribute("tipoMensaje", "success");
-            return "redirect:/hechos/" + hechoCreado.getId();
-        } catch (DuplicateHechoException ex) {
-            bindingResult.rejectValue("titulo", "error.titulo", ex.getMessage());
-            return "hechos/crear"; // Volver a la página de creación con el mensaje de error
-        }catch (ValidationException e) {
-            convertirValidationExceptionABindingResult(e, bindingResult);
-            model.addAttribute("titulo", "Crear Nuevo Alumno");
-            return "alumnos/crear";
-        }catch (Exception e) {
-            model.addAttribute("error", "Error al crear el hecho: " + e.getMessage());
-            return "hechos/crear"; // Volver a la página de creación con el mensaje de error
-        }
-    }
-
     @PostMapping("/eliminar/{id}")
     public String eliminarHecho(@ModelAttribute("id") Long id,
                                 RedirectAttributes redirectAttributes) {
@@ -76,9 +46,4 @@ public class HechoController {
         return "hechos/detalle-hecho";
     }
 
-    private void convertirValidationExceptionABindingResult(ValidationException e, BindingResult bindingResult) {
-        if(e.hasFieldErrors()) {
-            e.getFieldErrors().forEach((field, error) -> bindingResult.rejectValue(field, "error." + field, error));
-        }
-    }
 }

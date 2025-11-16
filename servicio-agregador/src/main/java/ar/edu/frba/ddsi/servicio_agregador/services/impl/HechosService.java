@@ -40,19 +40,15 @@ public class HechosService implements IHechosService {
   private IFuentesRepository fuentesRepository;
 
   private FuenteEstaticaClient estaticaWebClient;
-  private FuenteDinamicaClient dinamicaWebClient;
-  private FuenteProxyClient proxyWebClient;
 
   private EvaluadorDeConsenso evaluadorDeConsenso;
 
   private IApiGeoRef apiGeoRef;
 
-  public HechosService(IApiGeoRef apiGeoRef, IHechosRepository hechosRepository, IFuentesRepository fuentesRepository, FuenteEstaticaClient estatica, FuenteDinamicaClient dinamica, FuenteProxyClient proxy, EvaluadorDeConsenso evaluadorDeConsenso, ICategoriasService categoriaService) {
+  public HechosService(IApiGeoRef apiGeoRef, IHechosRepository hechosRepository, IFuentesRepository fuentesRepository, FuenteEstaticaClient estatica, EvaluadorDeConsenso evaluadorDeConsenso, ICategoriasService categoriaService) {
     this.hechosRepository = hechosRepository;
     this.fuentesRepository = fuentesRepository;
     this.estaticaWebClient = estatica;
-    this.dinamicaWebClient = dinamica;
-    this.proxyWebClient = proxy;
     this.evaluadorDeConsenso = evaluadorDeConsenso;
     this.categoriaService = categoriaService;
     this.apiGeoRef = apiGeoRef;
@@ -66,7 +62,7 @@ public class HechosService implements IHechosService {
 
   @Override
   public Mono<Void> actualizarYCargarNuevosHechos() {
-    List<IAPIClient> servicios = List.of(estaticaWebClient, dinamicaWebClient, proxyWebClient);
+    List<IAPIClient> servicios = List.of(estaticaWebClient);
 
     return Flux.fromIterable(servicios)
         .doOnNext(client -> log.info("🔄 Procesando cliente: {}", client.getClass().getSimpleName()))
@@ -74,7 +70,7 @@ public class HechosService implements IHechosService {
             .onErrorResume(e -> {
               log.error("❌ Error al obtener hechos de {}: {}",
                   client.getClass().getSimpleName(), e.getMessage());
-              return Mono.empty(); // Permite continuar con el siguiente cliente
+              return Mono.empty();
             }))
         .doOnNext(lista -> log.info("📋 Recibidos {} hechos", lista.size()))
         .concatMap(this::cargarFuentesYCategorias)

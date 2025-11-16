@@ -14,8 +14,6 @@
 
 	<modules>
 		<module>servicio-fuente-estatica</module>
-		<module>servicio-fuente-dinamica</module>
-		<module>servicio-fuente-proxy</module>
 		<module>servicio-agregador</module>
         <module>servicio-estadistica</module>
 		<module>Interfaz_grafica</module>
